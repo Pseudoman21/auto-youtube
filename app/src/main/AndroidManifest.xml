@@ -3,7 +3,6 @@
 
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
-    <uses-permission android:name="androidx.car.app.ACCESS_SURFACE"/>
 
     <uses-feature
         android:name="android.hardware.type.automotive"
@@ -36,7 +35,7 @@
             </intent-filter>
             <meta-data
                 android:name="androidx.car.app.minCarApiLevel"
-                android:value="2"/>
+                android:value="1"/>
         </service>
 
     </application>
