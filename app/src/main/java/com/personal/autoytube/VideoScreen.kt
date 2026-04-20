@@ -8,8 +8,9 @@ import androidx.car.app.SurfaceCallback
 import androidx.car.app.SurfaceContainer
 import androidx.car.app.model.Action
 import androidx.car.app.model.ActionStrip
+import androidx.car.app.model.ItemList
 import androidx.car.app.model.Template
-import androidx.car.app.navigation.model.NavigationTemplate
+import androidx.car.app.navigation.model.MapTemplate
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.media3.common.MediaItem
@@ -54,7 +55,6 @@ class VideoScreen(carContext: CarContext, private val video: VideoItem) : Screen
                     surface = holder.surface
                     player?.setVideoSurface(holder.surface)
                 }
-
                 override fun onSurfaceDestroyed(holder: SurfaceContainer) {
                     player?.setVideoSurface(null)
                     surface = null
@@ -69,7 +69,6 @@ class VideoScreen(carContext: CarContext, private val video: VideoItem) : Screen
                 val streamResult = withContext(Dispatchers.IO) {
                     YouTubeHelper.getStreamResult(video.url)
                 }
-
                 val mediaItem = when (streamResult.type) {
                     StreamType.DASH -> MediaItem.Builder()
                         .setUri(streamResult.url)
@@ -81,14 +80,12 @@ class VideoScreen(carContext: CarContext, private val video: VideoItem) : Screen
                         .build()
                     StreamType.PROGRESSIVE -> MediaItem.fromUri(streamResult.url)
                 }
-
                 player = ExoPlayer.Builder(carContext).build().apply {
                     surface?.let { setVideoSurface(it) }
                     setMediaItem(mediaItem)
                     prepare()
                     playWhenReady = true
                 }
-
                 isLoading = false
                 invalidate()
             } catch (e: Exception) {
@@ -118,8 +115,19 @@ class VideoScreen(carContext: CarContext, private val video: VideoItem) : Screen
             )
             .build()
 
-        return NavigationTemplate.Builder()
+        val statusMessage = when {
+            isLoading -> "Loading video..."
+            errorMsg != null -> "Error: $errorMsg"
+            else -> video.title
+        }
+
+        return MapTemplate.Builder()
             .setActionStrip(actionStrip)
+            .setItemList(
+                ItemList.Builder()
+                    .setNoItemsMessage(statusMessage)
+                    .build()
+            )
             .build()
     }
 }
