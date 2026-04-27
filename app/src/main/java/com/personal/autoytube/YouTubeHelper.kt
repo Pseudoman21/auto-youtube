@@ -2,6 +2,7 @@ package com.personal.autoytube
 
 import org.schabi.newpipe.extractor.NewPipe
 import org.schabi.newpipe.extractor.ServiceList
+import org.schabi.newpipe.extractor.localization.ContentCountry
 import org.schabi.newpipe.extractor.stream.StreamInfo
 import org.schabi.newpipe.extractor.stream.StreamInfoItem
 
@@ -20,6 +21,22 @@ object YouTubeHelper {
 
     fun init() {
         NewPipe.init(DownloaderImpl.init(null))
+    }
+
+    fun getTrending(): List<VideoItem> {
+        val kioskList = ServiceList.YouTube.getKioskList()
+        val extractor = kioskList.getDefaultKioskExtractor(ContentCountry.DEFAULT)
+        extractor.fetchPage()
+        return extractor.initialPage.items
+            .filterIsInstance<StreamInfoItem>()
+            .map { item ->
+                VideoItem(
+                    title = item.name,
+                    url = item.url,
+                    uploader = item.uploaderName ?: "",
+                    duration = item.duration
+                )
+            }
     }
 
     fun search(query: String): List<VideoItem> {

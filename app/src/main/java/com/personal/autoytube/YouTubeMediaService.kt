@@ -59,6 +59,13 @@ class YouTubeMediaService : MediaBrowserServiceCompat() {
         }
 
         updatePlaybackState()
+
+        scope.launch {
+            try {
+                searchResults = withContext(Dispatchers.IO) { YouTubeHelper.getTrending() }
+                notifyChildrenChanged(ROOT_ID)
+            } catch (e: Exception) { /* trending unavailable */ }
+        }
     }
 
     override fun onDestroy() {
@@ -73,7 +80,12 @@ class YouTubeMediaService : MediaBrowserServiceCompat() {
         clientPackageName: String,
         clientUid: Int,
         rootHints: Bundle?
-    ): BrowserRoot = BrowserRoot(ROOT_ID, null)
+    ): BrowserRoot {
+        val extras = Bundle().apply {
+            putBoolean(BrowserRoot.EXTRA_OFFLINE, false)
+        }
+        return BrowserRoot(ROOT_ID, extras)
+    }
 
     override fun onLoadChildren(
         parentId: String,

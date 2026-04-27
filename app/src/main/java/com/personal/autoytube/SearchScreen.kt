@@ -18,7 +18,8 @@ import kotlinx.coroutines.withContext
 class SearchScreen(carContext: CarContext) : Screen(carContext) {
 
     private var results: List<VideoItem> = emptyList()
-    private var isLoading = false
+    private var isLoading = true
+    private var isTrending = true
     private var errorMessage: String? = null
     private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
 
@@ -28,15 +29,20 @@ class SearchScreen(carContext: CarContext) : Screen(carContext) {
                 scope.cancel()
             }
         })
+        loadTrending()
     }
 
     override fun onGetTemplate(): Template {
         val listBuilder = ItemList.Builder()
 
         when {
-            isLoading -> listBuilder.setNoItemsMessage("Searching...")
+            isLoading -> listBuilder.setNoItemsMessage(
+                if (isTrending) "Loading trending videos..." else "Searching..."
+            )
             errorMessage != null -> listBuilder.setNoItemsMessage("Error: $errorMessage")
-            results.isEmpty() -> listBuilder.setNoItemsMessage("Search for a YouTube video above")
+            results.isEmpty() -> listBuilder.setNoItemsMessage(
+                if (isTrending) "No trending videos available" else "No results found"
+            )
             else -> results.take(20).forEach { video ->
                 listBuilder.addItem(
                     Row.Builder()
@@ -61,8 +67,27 @@ class SearchScreen(carContext: CarContext) : Screen(carContext) {
             .build()
     }
 
+    private fun loadTrending() {
+        isLoading = true
+        isTrending = true
+        errorMessage = null
+        results = emptyList()
+
+        scope.launch {
+            try {
+                results = withContext(Dispatchers.IO) { YouTubeHelper.getTrending() }
+            } catch (e: Exception) {
+                errorMessage = e.message ?: "Failed to load trending"
+            } finally {
+                isLoading = false
+                invalidate()
+            }
+        }
+    }
+
     private fun search(query: String) {
         isLoading = true
+        isTrending = false
         errorMessage = null
         results = emptyList()
         invalidate()
