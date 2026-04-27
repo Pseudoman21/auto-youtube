@@ -2,7 +2,6 @@ package com.personal.autoytube
 
 import org.schabi.newpipe.extractor.NewPipe
 import org.schabi.newpipe.extractor.ServiceList
-import org.schabi.newpipe.extractor.localization.ContentCountry
 import org.schabi.newpipe.extractor.stream.StreamInfo
 import org.schabi.newpipe.extractor.stream.StreamInfoItem
 
@@ -25,7 +24,7 @@ object YouTubeHelper {
 
     fun getTrending(): List<VideoItem> {
         val kioskList = ServiceList.YouTube.getKioskList()
-        val extractor = kioskList.getDefaultKioskExtractor(ContentCountry.DEFAULT)
+        val extractor = kioskList.getDefaultKioskExtractor()
         extractor.fetchPage()
         return extractor.initialPage.items
             .filterIsInstance<StreamInfoItem>()
