@@ -63,7 +63,7 @@ class SearchScreen(carContext: CarContext) : Screen(carContext) {
             .setSearchHint("Search YouTube...")
             .setShowKeyboardByDefault(false)
             .setLoading(isLoading)
-            .setItemList(listBuilder.build())
+            .apply { if (!isLoading) setItemList(listBuilder.build()) }
             .build()
     }
 
